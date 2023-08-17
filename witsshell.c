@@ -11,9 +11,9 @@
 
 void stringHandling(char *line);
 
-void getInputInteractiveMode(){ // loop until user input is exit or Ctrl-D
+void getInputInteractiveMode(){ 
 	char line[1024];
-	//char **pieces;s
+	
 	int bufLen =1024; //buffer lengths
 
 	while(1){
@@ -22,7 +22,7 @@ void getInputInteractiveMode(){ // loop until user input is exit or Ctrl-D
 
 		stringHandling(line);
 	}
-	free(line);
+	//free(line);
 	
 }
 //pointer = heap
@@ -50,8 +50,8 @@ void stringHandling(char* line){
 	//Separting the line into its components 
 	//Use tokens where a token is a string separated by white spaces
 	//use strsep()
-	char **tokens;
-	char *currentT;
+	char **tokens; //2D array of chars = 1D array of strings 
+	char *currentT; //current token = current string
 	int count=1;
 	int index =0; //token index in tokens
 	int lenLine = sizeof(line)/sizeof(char); // gets the number of characters in the line
@@ -62,7 +62,7 @@ void stringHandling(char* line){
 	}
 	tokens = malloc(count * sizeof(char*));
 	while((currentT = strsep(&line, " ")) != NULL){ //pulls out first string up until whitespace and puts in currentT and removes from line
-	//then check that currentT is  empty which means its reached the end of the string
+	//then check that currentT is  empty which means its reached the end of the line
 		tokens[index] = currentT;
 		index++;
 	}
