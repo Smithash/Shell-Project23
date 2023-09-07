@@ -17,6 +17,51 @@ char* env[50];
 
 void stringHandling(char *line);
 
+void parallel(char *argv[], int argc, char* filename){
+	int i=0; int file=0;
+
+	//loop over the number of processes
+	for(i=0; i<numProcess;i++){
+
+	}
+}
+void redirection(char *argv[], int argc){
+	if(argc ==0){
+		return;
+	}
+
+	int i=0;
+	//create new argument vector
+	char* newArgv[50];
+
+	//loop while i is less than number of argumets in argv and while we not reading ">"
+	while(i<argc && strcmp(argv[i], ">")!=0){ //putting the arguments before the redirect symbol in a new temp array
+		newArgv[i]= argv[i];
+		i++;
+	}
+	//assign last element of newArgv to null
+	newArgv[i] =NULL;
+
+	
+	//if we are at end of argv, we now need to execute the command -> send to parallel incase there is parallel command (no redirect)
+	if(i== argc){
+		//parallel function goes here
+	}
+	//if we are 1 before the end (i.e > is only symbol left) or 2 before end -> error
+	else if(i==argc-1 || i<argc-2 || i==0){
+		//error message
+		return;
+	} 
+	else{//redirect
+		int args = argc -2;
+		char* passedArguments = argv[argc-1];
+		//if nothing else executes 
+		//parallel function
+		return;
+	}
+
+}
+
 //executing shell commands 
 void exec_commands(char* argcVec[], int argCount){
 	
@@ -61,8 +106,9 @@ void exec_commands(char* argcVec[], int argCount){
 		
 		bool was_found = false;
 		pid_t pid = fork();
-
+		
 		if(pid ==0){
+		
 			char binPath[256];
 			for(size_t i=0; i < numProcess; i++){
 				strcpy(binPath, path[i]);
@@ -80,7 +126,7 @@ void exec_commands(char* argcVec[], int argCount){
 			//error message 
 		}
 		else{
-			wait(NULL);
+			waitpid(pid,NULL,0);
 		}
 	}
 
@@ -90,7 +136,6 @@ void exec_commands(char* argcVec[], int argCount){
 
 void getInputInteractiveMode(){ 
 	char line[1024];
-	
 	int bufLen =1024; //buffer lengths
 
 	while(1){
