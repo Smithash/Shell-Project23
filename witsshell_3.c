@@ -333,12 +333,7 @@ void getInputBatchMode(char *filepath){
 	
     env[0] = path;
     num_processes = 1;
-
-	if(file==NULL){
-            //if no file, produce error and exit
-            //write(STDERR_FILENO, error_message, strlen(error_message));
-            exit(1);
-    }
+	
 	//String handling of each line of the file
 	while(fgets(buffer, 1024, file) !=NULL){
 		stringHandling(buffer);
@@ -364,7 +359,7 @@ int main(int argc, char *argv[]){
         env[0]=path;
         num_processes=1;
         //an error has occured
-        write(STDERR_FILENO, error_message, strlen(error_message));
+        write(STDERR_FILENO, error_message,strlen(error_message));
         //exit program if error
         exit(1);
     }
