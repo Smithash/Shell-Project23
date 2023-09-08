@@ -17,49 +17,26 @@ char* env[50];
 
 void stringHandling(char *line);
 
-void parallel(char *argv[], int argc, char* filename){
-	int i=0; int file=0;
-
-	//loop over the number of processes
-	for(i=0; i<numProcess;i++){
-
-	}
-}
-void redirection(char *argv[], int argc){
-	if(argc ==0){
-		return;
-	}
-
+void redirection(char* argv[],int argCount){
+ 	char* filename;
 	int i=0;
-	//create new argument vector
-	char* newArgv[50];
-
-	//loop while i is less than number of argumets in argv and while we not reading ">"
-	while(i<argc && strcmp(argv[i], ">")!=0){ //putting the arguments before the redirect symbol in a new temp array
-		newArgv[i]= argv[i];
-		i++;
+	int file;
+	for(i=0; i<argCount;i++){
+		printf("%d\n",strcmp(argv[i], ">"));
+		if(strcmp(argv[i], ">")==0){
+			//check only 1 more argument else error
+			if(i == argCount -2 && argv[i+1]!=">"){
+				filename = argv[i+1];
+				file = open(filename, O_RDWR|O_CREAT|O_TRUNC, 0600);
+    		//create copy of file descripter
+    			dup2(file, 1);
+    			close(file);
+			}
+			else{
+				//error
+			}
+		}
 	}
-	//assign last element of newArgv to null
-	newArgv[i] =NULL;
-
-	
-	//if we are at end of argv, we now need to execute the command -> send to parallel incase there is parallel command (no redirect)
-	if(i== argc){
-		//parallel function goes here
-	}
-	//if we are 1 before the end (i.e > is only symbol left) or 2 before end -> error
-	else if(i==argc-1 || i<argc-2 || i==0){
-		//error message
-		return;
-	} 
-	else{//redirect
-		int args = argc -2;
-		char* passedArguments = argv[argc-1];
-		//if nothing else executes 
-		//parallel function
-		return;
-	}
-
 }
 
 //executing shell commands 
@@ -74,7 +51,9 @@ void exec_commands(char* argcVec[], int argCount){
 	/*Checking if command is a built in command*/
 
 	//Exit command 
+		
 	if(strcmp(argcVec[0], "exit")==0){
+		
 		exit(0);
 	}
 
@@ -103,6 +82,7 @@ void exec_commands(char* argcVec[], int argCount){
 	}
 	//non built-in commands
 	else{
+		numProcess = argCount -1;
 		
 		bool was_found = false;
 		pid_t pid = fork();
@@ -110,7 +90,7 @@ void exec_commands(char* argcVec[], int argCount){
 		if(pid ==0){
 		
 			char binPath[256];
-			for(size_t i=0; i < numProcess; i++){
+			for(size_t i=0; i <= numProcess; i++){
 				strcpy(binPath, path[i]);
 				strcat(binPath, argcVec[0]);
 
@@ -119,8 +99,12 @@ void exec_commands(char* argcVec[], int argCount){
 					was_found = true;
 					break;
 				}
+				printf("%s\n", binPath);
+				redirection(binPath, numProcess);
 			//end for loop
 			}
+		
+
 		}
 		if(!was_found){
 			//error message 
@@ -128,6 +112,10 @@ void exec_commands(char* argcVec[], int argCount){
 		else{
 			waitpid(pid,NULL,0);
 		}
+
+		
+        
+       
 	}
 
 	
@@ -192,7 +180,11 @@ void stringHandling(char* line){
 		tokens[index] = currentT;
 		index++;
 	}
-	//String handling for Basic is done! the next string handling is for parallel
+	
+	//redirection string handling
+
+	//parallel string handling 
+
 
 	exec_commands(tokens, count);
 }
