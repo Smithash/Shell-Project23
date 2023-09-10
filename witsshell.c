@@ -12,21 +12,11 @@
 char error_message[30]="An error has occurred\n";
 //path to be used, by default its /bin/ but can be changed with path command
 char* path="/bin/";
-//store the num of processes, 0 by default
+//store the num of processes
 int num_processes=0;
 char* env[50]; //env is an environmental variable used to store of folder locations the shell will search through
 
-int paralFileHandler(int file, char* fileName)
-{
-    //file is open for read and write O_RDWR
-    //create file if it dosent exist O_CREAT
-    //trunc file if ti exists adn is regular
-    file = open(fileName, O_RDWR|O_CREAT|O_TRUNC, 0600);
-    //create copy of file descripter
-    dup2(file, 1);
-    close(file);
-    return file;
-}
+
 
 void parallel(char *argv[],int argc, char* filename){
     int i = 0;
@@ -37,8 +27,8 @@ void parallel(char *argv[],int argc, char* filename){
         char *commandLine = malloc(strlen(env[i])+strlen(argv[0])+1);
         commandLine[0] = '\0';              //set null character
         strcpy(commandLine, env[i]);        //copy curr env into fullName
-        strcat(commandLine, "/");           //add / incase user dosent
-        strcat(commandLine, argv[0]);  //add the argvec
+        strcat(commandLine, "/");           //add / in case user dosent
+        strcat(commandLine, argv[0]);  //add the arguements 
 
 
 
@@ -46,12 +36,12 @@ void parallel(char *argv[],int argc, char* filename){
         if(access(commandLine,X_OK)==0){
             //fork a n process
             int pid = fork();
-            //if the process id is 0-> child has been created and so perform the function
+            //child process executes the command
             if(pid==0){
                 //set last elem of args to null
                 argv[argc] = NULL;
-                //hamdle if there is a file
-                if(filename!=NULL){ //The redirect occurs here 
+                //if we have a file (i.e redirect)
+                if(filename!=NULL){ 
                     file = open(filename, O_RDWR|O_CREAT|O_TRUNC, 0600);
                     //create copy of file descripter
                     dup2(file, 1);
@@ -75,15 +65,15 @@ void parallel(char *argv[],int argc, char* filename){
 
 void redirection(char* argv[], int argc)
 {
-    //cannt have 0 args
+    //cannt have no arguments
     if(argc==0)
     {
         return;
     }
     
-    //init loop counter
+    
     int i=0;
-    //init new arg vector
+    //stores the new arguments 
     char* newargv[50];
     
     //loop while i is less than num of args in arg vec and while we are not reading '>' indicating a redirect
@@ -94,20 +84,20 @@ void redirection(char* argv[], int argc)
     }
     //assign last elem of argv to be null
     newargv[i]=NULL;
-    //if we are at end of argv when we exit the while loop, need to now execute -> send to parallel incase there is parallel command
+    //if we are at end of arguments array when we exit the while loop, need to now execute -> send to parallel incase there is parallel command
     if(i==argc)
-    {
+    { //no redirect (no output file) but possible parallel command
         parallel(newargv, argc, NULL);
         return;
     }
-    //if we are one before the end or 2 before the end-> error
+    
     else if(i==argc-1 || i<argc-2 || i==0)
     {
         write(STDERR_FILENO, error_message, strlen(error_message));
         return;
     }
     else
-    {
+    { //normal redirection
         int args=argc-2;
         char* passedArgs=argv[argc-1];
         
@@ -129,7 +119,7 @@ void exec_commands(char* argv[], int argc)
     //if that command is exit
     if(strcmp(argv[0], "exit")==0)
     {
-        //for exit command, if there are more args than just exit, error
+        //for exit command, if there are more arguments than just exit, error
         if(argc!=1)
         {
             write(STDERR_FILENO, error_message, strlen(error_message));
@@ -142,7 +132,7 @@ void exec_commands(char* argv[], int argc)
     //if command is cd
     else if(strcmp(argv[0], "cd")==0)
     {
-        //if we have 2 args-> cd=1 and the new direciry =2
+        //if we have 2 args, cd and the directory (only 2 allowed arguments)
         if(argc==2)
         {
             //if chdir returns a 0 then error
@@ -168,7 +158,7 @@ void exec_commands(char* argv[], int argc)
         int i;
         for(i=0; i<argc-1; i++)
         {
-            //overwitre any env variable
+            //overwrite the original path
             env[i]=argv[i+1];
         }
     }
@@ -255,7 +245,8 @@ void stringHandling(char* line)
             if(line[i]=='&')
             {
                 //create a temp arg
-                char *arg=malloc(256*sizeof(char));
+                //char *arg=malloc(256*sizeof(char));
+                char arg[256];
                 arg[0]='&';
                 //null character value
                 arg[1]='\0';
@@ -305,7 +296,7 @@ void stringHandling(char* line)
     }
     exec_commands(argv, count);
 }
-void getInputInteractiveMode(){ 
+void getInputInteractiveMode(){  //Interactive Mode
 	char line[1024];
 	int bufLen =1024; //buffer lengths
 
@@ -324,7 +315,7 @@ void getInputInteractiveMode(){
 	
 }
 
-void getInputBatchMode(char *filepath){
+void getInputBatchMode(char *filepath){ //Batch Mode
 	//Read in the file 
 	//While not end of file and do string handling for each line
 
@@ -336,7 +327,7 @@ void getInputBatchMode(char *filepath){
 
 	if(file==NULL){
             //if no file, produce error and exit
-            //write(STDERR_FILENO, error_message, strlen(error_message));
+            write(STDERR_FILENO, error_message, strlen(error_message));
             exit(1);
     }
 	//String handling of each line of the file

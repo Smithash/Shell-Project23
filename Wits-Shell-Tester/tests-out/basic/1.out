@@ -1,6 +1,8 @@
+shell
 test-witsshell.sh
 tester
 tests
 tests-out
 witsshell
 witsshell.c
+witsshell_4.c
